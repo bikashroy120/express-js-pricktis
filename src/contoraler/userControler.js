@@ -6,7 +6,7 @@ const createError = require('http-errors')
 const { FindItem } = require("../services/findByIdServices")
 const deleteImage = require("../helper/deleteImage")
 const { creactjwtToken } = require("../helper/jwtToken")
-const { jwtKey, accesskey } = require("../secret")
+const { jwtKey, accesskey, recet } = require("../secret")
 const emailWithNodemailler = require("../helper/email")
 const jwt = require('jsonwebtoken')
 const fs = require("fs")
@@ -349,6 +349,56 @@ const changePasssword = async(req,res,next)=>{
 }
 
 
+const forgetPassword = async(req,res,next)=>{
+    try {
+        const email = req.body.email;
+
+        const user = await User.findOne({email:email})
+
+        if(!user){
+            throw createError(404,"ther are no acount, Please regester?")
+        }
+
+        const token = creactjwtToken({user},recet,"10m")
+
+        const emailData = {
+            email,
+            subject:"Acount Activition Email",
+            html:`
+                <h2> hello ${user.name} !</h2>
+                <p>Plases Click here to <a href="${process.env.CLIENT_URL}/api/users/activate/${token}" target="_blank">activate your  acount </a></p>
+            `
+        }
+
+        try {
+            await emailWithNodemailler(emailData)
+        } catch (error) {
+            next(createError(404,"email not send"))
+            return
+        }
+
+        res.status(200).json({
+            success:true,
+            message:"email send success",
+            token
+            })
+        
+    } catch (error) {
+        next(createError(404,error)) 
+    }
+}
+
+
+const resetPassword = async(req,res,next)=>{
+    try {
+        const {token,password}=req.body
+        
+    } catch (error) {
+        next(createError(404,error))  
+    }
+}
+
+
 module.exports= {
     regester,
     getUser,
@@ -360,5 +410,6 @@ module.exports= {
     userLogOut,
     BannedUser,
     unBannedUser,
-    changePasssword
+    changePasssword,
+    forgetPassword
 }
