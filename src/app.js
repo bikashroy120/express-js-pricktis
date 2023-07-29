@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser')
 
 const app = express()
 const userRoute = require("./router/userRouter")
+const categoryRouter = require("./router/categoryRouter")
 
 const createAccountLimiter = rateLimit({
 	windowMs: 1 * 60 * 1000,
@@ -31,6 +32,7 @@ app.get("/api/user",createAccountLimiter,(req,res)=>{
 })
 
 app.use("/api/user",userRoute)
+app.use("/api/category",categoryRouter)
 
 
 // client error handeler
